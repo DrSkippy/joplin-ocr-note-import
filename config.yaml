@@ -1,0 +1,11 @@
+# Tesseract Hot Folder Tool Configuration
+
+# Directory to watch for new images
+watch_folder: "/home/scott/ownCloud/tesseract-hot-folder"
+
+# Directory where OCR text output will be saved
+output_path: "/home/scott/Downloads"
+
+# Optional: Directory where Joplin-compatible markdown notes will be saved
+# If not specified, only text files will be created in output_path
+joplin_path: null
