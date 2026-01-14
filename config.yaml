@@ -8,4 +8,4 @@ output_path: "/home/scott/Downloads"
 
 # Optional: Directory where Joplin-compatible markdown notes will be saved
 # If not specified, only text files will be created in output_path
-joplin_path: null
+joplin_path: "/home/scott/ownCloud/joplin-manual-import-folder"
