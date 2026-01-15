@@ -9,3 +9,12 @@ output_path: "/home/scott/Downloads"
 # Optional: Directory where Joplin-compatible markdown notes will be saved
 # If not specified, only text files will be created in output_path
 joplin_path: "/home/scott/ownCloud/joplin-manual-import-folder"
+
+# OCR Processor Selection
+# Choose which OCR processor to use: "tesseract" or "deepseek"
+ocr_processor: "deepseek"
+
+# DeepSeek OCR Configuration
+deepseek_ocr:
+  model: "deepseek-ocr:latest"
+  host: "http://192.168.1.91:11434"

@@ -28,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument('--watch-folder', type=str, help='Directory to watch for new images')
     parser.add_argument('--output-path', type=str, help='Directory where OCR text output will be saved')
     parser.add_argument('--joplin-path', type=str, help='Directory where Joplin markdown notes will be saved')
+    parser.add_argument('--processor', type=str, choices=['tesseract', 'deepseek'], help='OCR processor to use: tesseract or deepseek')
     parser.add_argument('--config', type=str, default='config.yaml', help='Path to config file (default: config.yaml)')
     args = parser.parse_args()
 
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     watch_folder = args.watch_folder or config.get('watch_folder', '/home/scott/ownCloud/tesseract-hot-folder')
     output_path = args.output_path or config.get('output_path', '/home/scott/Downloads')
     joplin_path = args.joplin_path or config.get('joplin_path')
+    ocr_processor = args.processor or config.get('ocr_processor', 'deepseek')
 
     # Ensure directories exist
     os.makedirs(watch_folder, exist_ok=True)
@@ -46,7 +48,7 @@ if __name__ == "__main__":
         os.makedirs(joplin_path, exist_ok=True)
 
     # Set up observer
-    event_handler = ImageHandler(output_path, joplin_path)
+    event_handler = ImageHandler(output_path, joplin_path, ocr_processor)
     observer = Observer()
     observer.schedule(event_handler, watch_folder, recursive=False)
     observer.start()
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     logger.info(f"Output directory: {output_path}")
     if joplin_path:
         logger.info(f"Joplin notes directory: {joplin_path}")
+    logger.info(f"OCR processor: {ocr_processor}")
     logger.info("Press Ctrl+C to stop")
 
     try:

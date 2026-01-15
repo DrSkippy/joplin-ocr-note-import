@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, '/home/scott/Working/tesseract-hot-folder-tool')
 
 from common.logging_config import setup_logging
-from ocr.process import process_image_path
+from ocr.tesseract_process import process_image_path
 from watcher.directory_watcher import ImageHandler
 from unittest.mock import Mock
 

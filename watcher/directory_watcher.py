@@ -1,33 +1,47 @@
 import time
 import os
+import importlib
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-from ocr.process import process_image_path
 from joplin.note import JoplinNote
 from common.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 class ImageHandler(FileSystemEventHandler):
-    def __init__(self, output_folder, joplin_path=None):
+    def __init__(self, output_folder, joplin_path=None, ocr_processor='deepseek'):
         """
         Initialize the handler with the output folder path.
 
         Args:
             output_folder: Directory where text files will be saved
             joplin_path: Optional directory where Joplin markdown notes will be saved
+            ocr_processor: OCR processor to use ('tesseract' or 'deepseek')
         """
         super().__init__()
         self.output_folder = output_folder
         self.joplin_path = joplin_path
+        self.ocr_processor = ocr_processor
+
+        # Dynamically import the appropriate OCR processor
+        if ocr_processor == 'tesseract':
+            module = importlib.import_module('ocr.tesseract_process')
+        elif ocr_processor == 'deepseek':
+            module = importlib.import_module('ocr.deepseekocr_process')
+        else:
+            logger.warning(f"Unknown OCR processor '{ocr_processor}', defaulting to deepseek")
+            module = importlib.import_module('ocr.deepseekocr_process')
+
+        self.process_image_path = module.process_image_path
+        logger.debug(f"Initialized ImageHandler with {ocr_processor} processor")
 
     def process(self, event):
         """Processes newly created image files."""
         if event.is_directory:
             return
         source_path = str(event.src_path)
-        extracted_text = process_image_path(source_path)
+        extracted_text = self.process_image_path(source_path)
 
         if self.joplin_path:
             # Create Joplin markdown note
