@@ -1,14 +1,17 @@
-# Tesseract Hot Folder Tool
+# Joplin OCR Note Import Tool
 
-A Python-based hot folder monitoring tool that automatically performs OCR (Optical Character Recognition) on images and PDFs using Tesseract. The tool watches a specified directory for new image files, extracts text from them, and can create either plain text files or Joplin-compatible markdown notes with embedded images.
+A Python-based hot folder monitoring tool that automatically performs OCR (Optical Character Recognition) on images and PDFs using either Tesseract or DeepSeek OCR. The tool watches a specified directory for new image files, extracts text from them, and can create either plain text files or Joplin-compatible markdown notes with embedded images.
 
 ## Features
 
 - **Automatic File Monitoring**: Watches a directory for new image files in real-time
-- **OCR Processing**: Extracts text from images and PDFs using Tesseract OCR
+- **Multiple OCR Processors**: Choose between Tesseract OCR (local, open-source) or DeepSeek OCR (AI-powered via Ollama)
 - **Multiple Output Formats**:
   - Plain text files (.txt)
   - Joplin-compatible markdown notes with embedded images
+- **OCR Processor Selection**: Choose between:
+  - **Tesseract**: Traditional OCR engine, fast and reliable for standard documents
+  - **DeepSeek**: AI-powered OCR via Ollama for complex layouts and better accuracy
 - **Flexible Configuration**: Configure via YAML file or command-line arguments
 - **Filename Sanitization**: Automatically removes spaces and special characters from filenames for Joplin compatibility
 - **Comprehensive Logging**: Detailed logs with timestamps, module names, function names, and line numbers
@@ -18,8 +21,12 @@ A Python-based hot folder monitoring tool that automatically performs OCR (Optic
 ## System Requirements
 
 - Python 3.10 or higher
-- Tesseract OCR installed on your system
 - Poetry (for dependency management)
+- **For Tesseract OCR processor**:
+  - Tesseract OCR installed on your system
+- **For DeepSeek OCR processor**:
+  - Ollama installed and running
+  - DeepSeek OCR model pulled in Ollama (`ollama pull deepseek-ocr`)
 
 ### Installing Tesseract
 
@@ -35,12 +42,26 @@ brew install tesseract
 
 **Other systems:** Visit the [Tesseract documentation](https://github.com/tesseract-ocr/tesseract)
 
+### Installing Ollama (for DeepSeek OCR)
+
+**Linux:**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull deepseek-ocr
+```
+
+**macOS/Windows:**
+Visit [ollama.com](https://ollama.com) to download and install, then:
+```bash
+ollama pull deepseek-ocr
+```
+
 ## Installation
 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd tesseract-hot-folder-tool
+cd joplin-ocr-note-import
 ```
 
 2. Install dependencies using Poetry:
@@ -55,7 +76,7 @@ poetry install
 Create or edit `config.yaml` in the project root:
 
 ```yaml
-# Tesseract Hot Folder Tool Configuration
+# Joplin OCR Note Import Tool Configuration
 
 # Directory to watch for new images
 watch_folder: "/path/to/watch/folder"
@@ -66,6 +87,15 @@ output_path: "/path/to/output"
 # Optional: Directory where Joplin-compatible markdown notes will be saved
 # Set to a path to enable Joplin mode, or leave as null for text-only mode
 joplin_path: null  # or "/path/to/joplin/notes"
+
+# OCR Processor Selection
+# Choose which OCR processor to use: "tesseract" or "deepseek"
+ocr_processor: "tesseract"  # or "deepseek"
+
+# DeepSeek OCR Configuration (only used if ocr_processor is "deepseek")
+deepseek_ocr:
+  model: "deepseek-ocr:latest"
+  host: "http://localhost:11434"  # Ollama server address
 ```
 
 ### Command-Line Arguments
@@ -80,6 +110,7 @@ poetry run python bin/tool.py [OPTIONS]
 - `--watch-folder PATH`: Directory to watch for new images
 - `--output-path PATH`: Directory where OCR text output will be saved
 - `--joplin-path PATH`: Directory where Joplin markdown notes will be saved (optional)
+- `--processor {tesseract,deepseek}`: OCR processor to use (optional, default from config)
 - `--config PATH`: Path to config file (default: config.yaml)
 
 ## Usage
@@ -108,7 +139,7 @@ poetry run python bin/tool.py --watch-folder /path/to/watch --joplin-path /path/
 When an image is added to the watch folder:
 1. OCR extracts text from the image
 2. A `.md` markdown file is created in the joplin directory
-3. The image is moved to the joplin directory with a sanitized filename
+3. The image is copied to the joplin directory with a sanitized filename
 4. The markdown note includes the extracted text and an embedded image link
 
 ### Using Config File
@@ -124,6 +155,22 @@ This uses settings from `config.yaml` in the project directory.
 ```bash
 poetry run python bin/tool.py --config /path/to/custom-config.yaml
 ```
+
+### Using DeepSeek OCR Processor
+
+To use DeepSeek OCR instead of Tesseract, either set it in your config.yaml:
+
+```yaml
+ocr_processor: "deepseek"
+```
+
+Or specify it via command line:
+
+```bash
+poetry run python bin/tool.py --processor deepseek --watch-folder /path/to/watch
+```
+
+DeepSeek OCR provides better accuracy for complex layouts, handwritten text, and documents with mixed content.
 
 ## Output Formats
 
@@ -167,12 +214,12 @@ Creates a markdown note with this format:
 1. **File Monitoring**: The tool uses `watchdog` to monitor the specified directory for new files
 2. **File Detection**: When a new image or PDF is created in the watch folder, it triggers processing
 3. **OCR Processing**:
-   - Images are preprocessed (converted to grayscale, upscaled) for better accuracy
-   - PDFs are converted to images at 300 DPI
-   - Tesseract extracts text from each page/image
+   - **Tesseract**: Images are preprocessed (grayscale, upscaled) and text is extracted using Tesseract
+   - **DeepSeek**: Images are sent to Ollama's DeepSeek OCR model for AI-powered text extraction
+   - PDFs are converted to images at 300 DPI before processing
 4. **Output Generation**:
    - **Text mode**: Creates a `.txt` file in the output directory
-   - **Joplin mode**: Creates a `.md` file and moves the image to the joplin directory
+   - **Joplin mode**: Creates a `.md` file and copies the image to the joplin directory
 5. **Filename Sanitization**: Spaces and special characters are removed from filenames in Joplin mode
 
 ## Logging
@@ -193,7 +240,7 @@ YYYY-MM-DD HH:MM:SS - module.name - function:line - LEVEL - message
 ## Project Structure
 
 ```
-tesseract-hot-folder-tool/
+joplin-ocr-note-import/
 ├── bin/
 │   └── tool.py                 # Main entry point
 ├── common/
@@ -204,7 +251,8 @@ tesseract-hot-folder-tool/
 │   └── note.py                 # JoplinNote class for markdown generation
 ├── ocr/
 │   ├── __init__.py
-│   └── process.py              # OCR processing functions
+│   ├── tesseract_process.py    # Tesseract OCR processor
+│   └── deepseekocr_process.py  # DeepSeek OCR processor
 ├── watcher/
 │   ├── __init__.py
 │   └── directory_watcher.py    # File system monitoring
@@ -244,6 +292,7 @@ This creates a sample invoice image with text for testing OCR accuracy.
 ## Dependencies
 
 - **pytesseract** (>=0.3.13): Python wrapper for Tesseract OCR
+- **ollama**: Python client for Ollama API (required for DeepSeek OCR)
 - **Pillow** (>=12.1.0): Image processing library
 - **watchdog** (>=6.0.0): File system monitoring
 - **pdf2image** (>=1.17.0): PDF to image conversion
@@ -251,11 +300,14 @@ This creates a sample invoice image with text for testing OCR accuracy.
 
 ## Tips for Best Results
 
-1. **Image Quality**: Higher resolution images (300 DPI+) produce better OCR results
-2. **File Formats**: PNG and TIFF generally work better than JPEG
-3. **Text Clarity**: Clear, high-contrast text is easier to recognize
-4. **Language Support**: Install additional Tesseract language packs if needed
-5. **Preprocessing**: The tool automatically preprocesses images, but manual cleanup may improve results for poor quality images
+1. **Choosing OCR Processor**:
+   - **Tesseract**: Fast, reliable, best for standard printed text and simple layouts
+   - **DeepSeek**: Better for complex layouts, handwritten text, tables, and mixed content (requires more resources)
+2. **Image Quality**: Higher resolution images (300 DPI+) produce better OCR results
+3. **File Formats**: PNG and TIFF generally work better than JPEG
+4. **Text Clarity**: Clear, high-contrast text is easier to recognize
+5. **Language Support**: Install additional Tesseract language packs if needed (Tesseract only)
+6. **Preprocessing**: Tesseract automatically preprocesses images, but manual cleanup may improve results for poor quality images
 
 ## Troubleshooting
 
@@ -265,10 +317,16 @@ This creates a sample invoice image with text for testing OCR accuracy.
 **"Tesseract not found"**
 - Install Tesseract OCR on your system (see System Requirements)
 
+**"Connection error" or "Ollama not found" (DeepSeek)**
+- Ensure Ollama is installed and running (`ollama serve`)
+- Check the `deepseek_ocr.host` setting in config.yaml matches your Ollama server address
+- Verify the DeepSeek model is pulled (`ollama list` should show `deepseek-ocr`)
+
 **Poor OCR accuracy**
+- Try switching between Tesseract and DeepSeek processors (`--processor` flag)
 - Check image quality and resolution
 - Ensure text is clear and high-contrast
-- Consider manually preprocessing images
+- Consider manually preprocessing images (for Tesseract)
 
 **Files not being detected**
 - Ensure the watch folder path is correct
