@@ -93,8 +93,8 @@ class JoplinNote:
 
         # Move image to output directory with sanitized filename
         image_dest = output_dir / self.image_filename
-        logger.debug(f"Moving image from {self.image_file_path} to {image_dest}")
-        shutil.move(str(self.image_file_path), str(image_dest))
+        logger.debug(f"Copying image from {self.image_file_path} to {image_dest}")
+        shutil.copy(str(self.image_file_path), str(image_dest))
 
         # Create markdown file
         markdown_filename = f"{self.note_title}.md"

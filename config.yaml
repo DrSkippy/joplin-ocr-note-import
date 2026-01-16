@@ -1,7 +1,7 @@
 # Tesseract Hot Folder Tool Configuration
 
 # Directory to watch for new images
-watch_folder: "/home/scott/ownCloud/tesseract-hot-folder"
+watch_folder: "/home/scott/ocr-processing-folder"
 
 # Directory where OCR text output will be saved
 output_path: "/home/scott/Downloads"

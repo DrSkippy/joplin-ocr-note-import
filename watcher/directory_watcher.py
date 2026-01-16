@@ -41,6 +41,9 @@ class ImageHandler(FileSystemEventHandler):
         if event.is_directory:
             return
         source_path = str(event.src_path)
+        extension = os.path.splitext(source_path)[1]
+        if extension.lower() not in [".jpg", ".jpeg", ".png", "tif", "pdf"]:
+            return
         extracted_text = self.process_image_path(source_path)
 
         if self.joplin_path:
